@@ -1,0 +1,98 @@
+var params = {
+    TableName: 'tblmusic',
+    KeySchema: [ // The type of of schema.  Must start with a HASH type, with an optional second RANGE. (Clave particion)
+        { // Required HASH type attribute
+            AttributeName: 'Artist',
+            KeyType: 'HASH',
+        },
+        { // Optional RANGE key type for HASH + RANGE tables ( clave principal compuesta y consta de dos atributos. El primer atributo es la clave de partición y el segundo, la clave de ordenación )
+            AttributeName: 'SongTitle', 
+            KeyType: 'RANGE', 
+        }
+    ],
+    AttributeDefinitions: [ // The names and types of all primary and index key attributes only
+        {
+            AttributeName: 'Artist',
+            AttributeType: 'S', // (S | N | B) for string, number, binary
+        },
+        {
+            AttributeName: 'SongTitle',
+            AttributeType: 'S', // (S | N | B) for string, number, binary
+        },
+        {
+            AttributeName: 'AlbumTitle',
+            AttributeType: 'S', // (S | N | B) for string, number, binary
+        },
+        {
+            AttributeName: 'Genre',
+            AttributeType: 'S', // (S | N | B) for string, number, binary
+        },
+        {
+            AttributeName: 'CriticRating',
+            AttributeType: 'S', // (S | N | B) for string, number, binary
+        },
+        
+        // ... Agregar mas atributos ...
+    ],
+    ProvisionedThroughput: { // required provisioned throughput for the table
+        ReadCapacityUnits: 1, 
+        WriteCapacityUnits: 1, 
+    },
+    GlobalSecondaryIndexes: [ // optional (list of GlobalSecondaryIndex)
+        // Índice con una clave de partición y una clave de ordenación que puede diferir de las claves de la tabla.
+        { 
+            IndexName: 'index_name_1', 
+            KeySchema: [
+                { // Required HASH type attribute
+                    AttributeName: 'AlbumTitle',
+                    KeyType: 'HASH',
+                },
+                { // Optional RANGE key type for HASH + RANGE secondary indexes
+                    AttributeName: 'Genre', 
+                    KeyType: 'RANGE', 
+                }
+            ],
+            Projection: { // attributes to project into the index
+                ProjectionType: 'INCLUDE', // (ALL | KEYS_ONLY | INCLUDE)
+                NonKeyAttributes: [ // required / allowed only for INCLUDE
+                    'attribute_name_1',
+                    // ... more attribute names ...
+                ],
+            },
+            ProvisionedThroughput: { // throughput to provision to the index
+                ReadCapacityUnits: 1,
+                WriteCapacityUnits: 1,
+            },
+        },
+        // ... more global secondary indexes ...
+    ],
+    LocalSecondaryIndexes: [ // optional (list of LocalSecondaryIndex)
+        //Índice que tiene la misma clave de partición que la tabla, pero una clave de ordenación distinta.
+        { 
+            IndexName: 'index_name_2',
+            KeySchema: [ 
+                { // Required HASH type attribute - must match the table's HASH key attribute name
+                    AttributeName: 'Artist',
+                    KeyType: 'HASH',
+                },
+                { // alternate RANGE key attribute for the secondary index
+                    AttributeName: 'CriticRating', 
+                    KeyType: 'RANGE', 
+                }
+            ],
+            Projection: { // required
+                ProjectionType: 'INCLUDE', // (ALL | KEYS_ONLY | INCLUDE)
+                NonKeyAttributes: [ // required / allowed only for INCLUDE
+                    'attribute_name_1',
+                    // ... more attribute names ...
+                ],
+            },
+        },
+        // ... more local secondary indexes ...
+    ],
+};
+dynamodb.createTable(params, function(err, data) {
+    if (err) ppJson(err); // an error occurred
+    else ppJson(data); // successful response
+
+});
